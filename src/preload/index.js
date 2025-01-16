@@ -61,17 +61,27 @@ const api = {
       {
         $group: {
           _id: '$name_site',
-          docs: { $push: '$$ROOT' }
+          docs: { $push: '$$ROOT' },
+          totalRows: { $sum: 1 },
+          totalRunning: {
+            $sum: {
+              $cond: [{ $in: ['$status', ['1', '3']] }, 1, 0]
+            }
+          }
         }
       },
       {
         $project: {
-          details: { $slice: ['$docs', 10] }
+          _id: 0,
+          name_site: '$_id',
+          details: { $slice: ['$docs', 10] },
+          totalRows: 1,
+          totalRunning: 1
         }
       },
       {
         $sort: {
-          _id: 1
+          name_site: 1
         }
       }
     ])
@@ -121,12 +131,16 @@ const api = {
 
     const activateCommand = !isWindows
       ? `source ${corePath}/.venv/bin/activate`
-      : '${corePath\\.venv\\Scripts\\activate}'
+      : `${corePath}\\.venv\\Scripts\\activate`
 
     const cdCommand = !isWindows ? `cd ${corePath}/crawler` : `'cd ${corePath}\\crawler`
 
+    const separator = !isWindows ? '&&' : ';'
+
+    const redirection = !isWindows ? ' > /dev/null 2>&1' : ''
+
     child_process.exec(
-      `${activateCommand} && ${cdCommand} && python script_new.py --sites ${siteName} --action  update_posts --userid 200 >> /dev/null 2>&1`,
+      `${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid 200 ${redirection}`,
       (err, stdout, stderr) => {
         console.log('err', err)
         console.log('stdout', stdout)

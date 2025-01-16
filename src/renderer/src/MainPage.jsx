@@ -26,6 +26,17 @@ import { Input } from './components/ui/input'
 import { Badge } from './components/ui/badge'
 import { useEffect, useState } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from './components/ui/dialog'
+import { Label } from './components/ui/label'
 
 export default function Page() {
   const [sites, setSites] = useState([])
@@ -211,14 +222,41 @@ export default function Page() {
           <div className="grid grid-cols-12 gap-4 w-full">
             {sites?.map((e) => {
               return (
-                <div key={e._id} className="flex flex-col items-center gap-4 col-span-6">
-                  <button
-                    type="button"
-                    onClick={() => executeCrawl(e._id)}
-                    className="bg-gray-100 flex items-center justify-center py-4 rounded-xl w-full hover:bg-gray-200 transition"
-                  >
-                    <p>{e._id}</p>
-                  </button>
+                <div key={e.name_site} className="flex flex-col items-center gap-4 col-span-6">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <button
+                        type="button"
+                        className="bg-red-400 flex items-center justify-between py-4 rounded-xl w-full hover:bg-red-200 transition px-4"
+                      >
+                        <p>{e.name_site}</p>
+                        <p>
+                          {e.totalRunning} / {e.totalRows}
+                        </p>
+                      </button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle className="mb-2">Crawl Confirmation</DialogTitle>
+                        <DialogDescription>
+                          Are you sure want to execute crawling job for website &quot;{e.name_site}
+                          &quot;?
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button type="button" variant="secondary">
+                            Close
+                          </Button>
+                        </DialogClose>
+                        <DialogClose asChild>
+                          <Button onClick={() => executeCrawl(e.name_site)} type="button">
+                            Sure
+                          </Button>
+                        </DialogClose>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                   <div className="bg-gray-100 flex flex-col py-4 rounded-xl w-full px-4 gap-4 justify-between">
                     {e.details.map((task) => {
                       let badge = ''
