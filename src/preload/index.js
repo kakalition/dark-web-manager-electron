@@ -125,22 +125,6 @@ const api = {
 
     const cdCommand = !isWindows ? `cd ${corePath}/crawler` : `cd ${corePath}\\crawler`
 
-    console.log('activate')
-    child_process.exec(activateCommand, (err, stdout, stderr) => {
-          console.log('err', err)
-          console.log('stdout', stdout)
-          console.log('stderr', stderr)
-        })
-
-    console.log('cd')
-    child_process.exec(cdCommand, (err, stdout, stderr) => {
-      console.log('err', err)
-      console.log('stdout', stdout)
-      console.log('stderr', stderr)
-    })
-
-    console.log(      `${activateCommand} ; ${cdCommand} ; python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`  )
-
     child_process.exec(
       `${activateCommand} ; ${cdCommand} ; python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`,
       (err, stdout, stderr) => {
