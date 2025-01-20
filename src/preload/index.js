@@ -136,6 +136,8 @@ const api = {
 
     const separator = isWindows ? '&' : '&&'
 
+    const cdCommand = !isWindows ? `cd ${corePath}/crawler` : `cd ${corePath}\\crawler`
+
     const redirection = !isWindows ? ' > /dev/null 2>&1' : ''
 
     child_process.exec(
