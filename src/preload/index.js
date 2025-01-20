@@ -61,17 +61,27 @@ const api = {
       {
         $group: {
           _id: '$name_site',
-          docs: { $push: '$$ROOT' }
+          docs: { $push: '$$ROOT' },
+          totalRows: { $sum: 1 },
+          totalRunning: {
+            $sum: {
+              $cond: [{ $in: ['$status', ['1', '3']] }, 1, 0]
+            }
+          }
         }
       },
       {
         $project: {
-          details: { $slice: ['$docs', 10] }
+          _id: 0,
+          name_site: '$_id',
+          details: { $slice: ['$docs', 10] },
+          totalRows: 1,
+          totalRunning: 1
         }
       },
       {
         $sort: {
-          _id: 1
+          name_site: 1
         }
       }
     ])
@@ -116,7 +126,7 @@ const api = {
   },
   executeSite: async (siteName) => {
     console.log('executing', siteName)
-    
+
     const corePath = window.localStorage.getItem('CORE_PATH')
     const isWindows = process.platform == 'win32'
 
@@ -124,10 +134,10 @@ const api = {
       ? `source ${corePath}/.venv/bin/activate`
       : `${corePath}\\.venv\\Scripts\\activate`
 
-    const cdCommand = !isWindows ? `cd ${corePath}/crawler` : `cd ${corePath}\\crawler`
-
     const separator = isWindows ? '&' : '&&'
-    
+
+    const redirection = !isWindows ? ' > /dev/null 2>&1' : ''
+
     child_process.exec(
       `${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`,
       (err, stdout, stderr) => {
@@ -138,7 +148,7 @@ const api = {
     )
   },
   stopCrawling: async () => {
-    if (process.platform == 'win32')  {
+    if (process.platform == 'win32') {
       child_process.exec(`taskkill -f -im python.exe`)
       child_process.exec(`taskkill -f -im tor-browser.exe`)
       child_process.exec(`taskkill -f -im firefox.exe`)
@@ -146,7 +156,7 @@ const api = {
       child_process.exec(`pkill -9 -f python`)
       child_process.exec(`pkill -9 -f tor-browser`)
     }
-    
+
     await (
       await Database.getJobsCrawlerCollection()
     ).updateMany(
