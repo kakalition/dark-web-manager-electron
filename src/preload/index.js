@@ -1,4 +1,4 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import Database from './Database'
 import UrlUtils from './UrlUtils'
@@ -9,6 +9,7 @@ const api = {
   getConfiguration: async () => {
     return {
       corePath: window.localStorage.getItem('CORE_PATH'),
+      mongoUrl: window.localStorage.getItem('MONGO_URL'),
       id: window.localStorage.getItem('id'),
       name: window.localStorage.getItem('name'),
       email: window.localStorage.getItem('email')
@@ -53,11 +54,6 @@ const api = {
   },
   getSites: async () => {
     const aggr = (await Database.getJobsCrawlerCollection()).aggregate([
-      {
-        $match: {
-          userid: `${window.localStorage.getItem('id')}`
-        }
-      },
       {
         $group: {
           _id: '$name_site',
@@ -142,12 +138,50 @@ const api = {
 
     child_process.exec(
       `${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`,
-      (err, stdout, stderr) => {
-        console.log('err', err)
+      async (err, stdout, stderr) => {
+        console.log('async in process')
+        if (err) {
+          console.log('err', err)
+          console.log('stderr', stderr)
+
+          await (
+            await Database.getJobsCrawlerCollection()
+          ).updateMany(
+            {
+              status: '3'
+            },
+            {
+              $set: {
+                status: '0'
+              }
+            }
+          )
+        }
+
         console.log('stdout', stdout)
-        console.log('stderr', stderr)
       }
     )
+
+    // const exe = child_process.spawn(
+    //   `${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`,
+    //   [],
+    //   { shell: true }
+    // )
+
+    // exe.stdout.on('data', (data) => {
+    //   console.log('on data')
+    //   console.log(data.toString())
+    // })
+
+    // exe.stderr.on('data', (data) => {
+    //   console.log('on error')
+    //   console.log(data.toString())
+
+    //   if (data.toString().includes('Wait captcha is ready')) {
+    //     ipcRenderer.send('CRAWL_CAPTCHA', 'CALLED')
+    //     console.log('send to renderer ipc')
+    //   }
+    // })
   },
   stopCrawling: async () => {
     if (process.platform == 'win32') {
@@ -171,7 +205,8 @@ const api = {
         }
       }
     )
-  }
+  },
+  onCrawlCaptcha: (callback) => ipcRenderer.on('CRAWL_CAPTCHA', (_event, value) => callback(value))
 }
 
 function getCurrentDateTime() {

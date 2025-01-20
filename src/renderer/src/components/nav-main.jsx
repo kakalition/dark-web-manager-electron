@@ -18,6 +18,7 @@ import { useEffect, useState } from 'react'
 
 export function NavMain() {
   const [corePath, setCorePath] = useState()
+  const [mongoUrl, setMongoUrl] = useState()
 
   useEffect(() => {
     fetchConfiguration()
@@ -27,10 +28,12 @@ export function NavMain() {
     const configuration = await window.api.getConfiguration()
 
     setCorePath(configuration.corePath)
+    setMongoUrl(configuration.mongoUrl)
   }
 
   function submitConfiguration() {
     window.localStorage.setItem('CORE_PATH', corePath)
+    window.localStorage.setItem('MONGO_URL', mongoUrl)
 
     fetchConfiguration()
 
@@ -61,6 +64,10 @@ export function NavMain() {
             <div className="grid w-full items-center gap-1.5">
               <Label>Core Path</Label>
               <Input type="text" value={corePath} onChange={(e) => setCorePath(e.target.value)} />
+            </div>
+            <div className="grid w-full items-center gap-1.5">
+              <Label>Mongo URL</Label>
+              <Input type="text" value={mongoUrl} onChange={(e) => setMongoUrl(e.target.value)} />
             </div>
             <DialogFooter>
               <Button onClick={submitConfiguration} type="button">

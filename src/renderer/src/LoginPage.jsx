@@ -3,8 +3,17 @@ import { Button } from './components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card'
 import { Input } from './components/ui/input'
 import { Label } from './components/ui/label'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
+import { CogIcon } from 'lucide-react'
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
+} from './components/ui/dialog'
 
 export default function LoginPage({ className, ...props }) {
   const [email, setEmail] = useState('')
@@ -31,6 +40,31 @@ export default function LoginPage({ className, ...props }) {
       window.location.reload()
     }, 1000)
   }
+
+  const [corePath, setCorePath] = useState()
+  const [mongoUrl, setMongoUrl] = useState()
+
+  useEffect(() => {
+    fetchConfiguration()
+  }, [])
+
+  async function fetchConfiguration() {
+    const configuration = await window.api.getConfiguration()
+
+    setCorePath(configuration.corePath)
+    setMongoUrl(configuration.mongoUrl)
+  }
+
+  function submitConfiguration() {
+    window.localStorage.setItem('CORE_PATH', corePath)
+    window.localStorage.setItem('MONGO_URL', mongoUrl)
+
+    fetchConfiguration()
+
+    setOpen(false)
+  }
+
+  const [open, setOpen] = useState(false)
 
   return (
     <div className="flex items-center justify-center h-screen" {...props}>
@@ -73,7 +107,34 @@ export default function LoginPage({ className, ...props }) {
             </form>
           </CardContent>
         </Card>
+
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger className="flex items-center justify-center">
+            <div className="p-3 rounded-xl border border-gray-200 flex items-center justify-center w-fit self-center">
+              <CogIcon />
+            </div>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Configuration</DialogTitle>
+            </DialogHeader>
+            <div className="grid w-full items-center gap-1.5">
+              <Label>Core Path</Label>
+              <Input type="text" value={corePath} onChange={(e) => setCorePath(e.target.value)} />
+            </div>
+            <div className="grid w-full items-center gap-1.5">
+              <Label>Mongo URL</Label>
+              <Input type="text" value={mongoUrl} onChange={(e) => setMongoUrl(e.target.value)} />
+            </div>
+            <DialogFooter>
+              <Button onClick={submitConfiguration} type="button">
+                Save changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
+
       <Toaster />
     </div>
   )

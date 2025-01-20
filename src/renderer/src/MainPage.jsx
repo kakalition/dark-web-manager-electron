@@ -36,13 +36,16 @@ import {
   DialogTitle,
   DialogTrigger
 } from './components/ui/dialog'
-import { Label } from './components/ui/label'
 
 export default function Page() {
   const [sites, setSites] = useState([])
 
   useEffect(() => {
     window.api.getSites().then(setSites)
+
+    window.api.onCrawlCaptcha((event, value) => {
+      console.log('on crawl captcha', event, value)
+    })
   }, [])
 
   useEffect(() => {
@@ -265,6 +268,12 @@ export default function Page() {
                         badge = (
                           <Badge className="flex-none hover:bg-gray-300 hover:text-black bg-gray-300 text-black">
                             PENDING
+                          </Badge>
+                        )
+                      } else if (task.status == 1) {
+                        badge = (
+                          <Badge className="flex-none hover:bg-green-500 bg-green-500">
+                            POST CRAWLED
                           </Badge>
                         )
                       } else if (task.status == 2) {
