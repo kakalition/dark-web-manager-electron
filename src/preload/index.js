@@ -126,21 +126,20 @@ const api = {
   },
   executeSite: async (siteName) => {
     console.log('executing', siteName)
+
     const corePath = window.localStorage.getItem('CORE_PATH')
-    const isWindows = corePath.includes('\\')
+    const isWindows = process.platform == 'win32'
 
     const activateCommand = !isWindows
       ? `source ${corePath}/.venv/bin/activate`
       : `${corePath}\\.venv\\Scripts\\activate`
 
-    const cdCommand = !isWindows ? `cd ${corePath}/crawler` : `'cd ${corePath}\\crawler`
-
-    const separator = !isWindows ? '&&' : ';'
+    const separator = isWindows ? '&' : '&&'
 
     const redirection = !isWindows ? ' > /dev/null 2>&1' : ''
 
     child_process.exec(
-      `${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid 200 ${redirection}`,
+      `${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`,
       (err, stdout, stderr) => {
         console.log('err', err)
         console.log('stdout', stdout)
@@ -149,8 +148,14 @@ const api = {
     )
   },
   stopCrawling: async () => {
-    child_process.exec(`pkill -9 -f python`)
-    child_process.exec(`pkill -9 -f tor-browser`)
+    if (process.platform == 'win32') {
+      child_process.exec(`taskkill -f -im python.exe`)
+      child_process.exec(`taskkill -f -im tor-browser.exe`)
+      child_process.exec(`taskkill -f -im firefox.exe`)
+    } else {
+      child_process.exec(`pkill -9 -f python`)
+      child_process.exec(`pkill -9 -f tor-browser`)
+    }
 
     await (
       await Database.getJobsCrawlerCollection()
