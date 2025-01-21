@@ -180,6 +180,21 @@ const api = {
   },
   killWorker: async (siteName) => {
     console.log(`killing ${siteName}`)
+
+    if (process.platform == 'win32') {
+      child_process.exec(
+        `powershell.exe -command "& Get-CimInstance -ClassName Win32_Process | Select-Object -Property ProcessId, CommandLine" | findstr ${siteName}`,
+        (err, stdout, stderr) => {
+          console.log('stdout', stdout)
+        }
+      )
+
+      child_process.exec(`taskkill -f -im firefox.exe`)
+    } else {
+      child_process.exec(`pkill -9 -f python`)
+      child_process.exec(`pkill -9 -f tor-browser`)
+    }
+
     child_process.exec(`pkill -9 -f ${siteName}`)
 
     await setRunningToPendingNamed(siteName)
