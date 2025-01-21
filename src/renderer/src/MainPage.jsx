@@ -44,7 +44,10 @@ export default function Page() {
   const [sites, setSites] = useState([])
 
   useEffect(() => {
+    window.api.test()
+
     window.api.getSites().then(setSites)
+
 
     window.addEventListener('message', async (event) => {
       if (event.source !== window) {

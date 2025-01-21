@@ -8,6 +8,7 @@ import Types from './Types'
 import sound from 'sound-play'
 
 const api = {
+  test: () => {},
   getConfiguration: async () => {
     return {
       corePath: window.localStorage.getItem('CORE_PATH'),
@@ -141,23 +142,6 @@ const api = {
 
     const redirection = !isWindows ? ' > /dev/null 2>&1' : ''
 
-    // child_process.exec(
-    //   `${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`,
-    //   async (err, stdout, stderr) => {
-    //     console.log('async in process')
-    //     if (err) {
-    //       console.log('err', err)
-    //       console.log('stderr', stderr)
-
-    //       window.postMessage({
-    //         type: Types.PROCESS_CRASHED
-    //       })
-
-    //       await setRunningToPendingNamed(siteName)
-    //     }
-    //   }
-    // )
-
     const exe = child_process.spawn(
       `${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`,
       [],
@@ -189,19 +173,25 @@ const api = {
 
     if (process.platform == 'win32') {
       child_process.exec(
-        `powershell.exe -command "& Get-CimInstance -ClassName Win32_Process | Select-Object -Property ProcessId, CommandLine" | findstr ${siteName}`,
+        'powershell.exe -command "& Get-CimInstance -ClassName Win32_Process | Select-Object -Property ProcessId, CommandLine" | findstr endchan',
         (err, stdout, stderr) => {
-          console.log('stdout', stdout)
+          const procs = stdout
+            .split('\n')
+            .map((e) => e.replace(/ +(?= )/g, ''))
+            .map((e) => e.split(' '))
+          const pids = procs.map((e) => e[1]).filter((e) => e != undefined)
+          console.log('pids', pids)
+
+          pids.forEach((pid) => {
+            child_process.exec(`taskkill -f -im firefox.exe`)
+            console.log(`killing pid ${pid}`)
+            child_process.exec(`taskkill /F /PID ${pid}`)
+          })
         }
       )
-
-      child_process.exec(`taskkill -f -im firefox.exe`)
     } else {
-      child_process.exec(`pkill -9 -f python`)
-      child_process.exec(`pkill -9 -f tor-browser`)
+      child_process.exec(`pkill -9 -f ${siteName}`)
     }
-
-    child_process.exec(`pkill -9 -f ${siteName}`)
 
     await setRunningToPendingNamed(siteName)
   },
