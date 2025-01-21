@@ -6,14 +6,7 @@ import { Label } from './components/ui/label'
 import { useEffect, useState } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
 import { CogIcon } from 'lucide-react'
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter
-} from './components/ui/dialog'
+import SettingsDialog from './components/SettingsDialog'
 
 export default function LoginPage({ className, ...props }) {
   const [email, setEmail] = useState('')
@@ -39,29 +32,6 @@ export default function LoginPage({ className, ...props }) {
     setTimeout(() => {
       window.location.reload()
     }, 1000)
-  }
-
-  const [corePath, setCorePath] = useState()
-  const [mongoUrl, setMongoUrl] = useState()
-
-  useEffect(() => {
-    fetchConfiguration()
-  }, [])
-
-  async function fetchConfiguration() {
-    const configuration = await window.api.getConfiguration()
-
-    setCorePath(configuration.corePath)
-    setMongoUrl(configuration.mongoUrl)
-  }
-
-  function submitConfiguration() {
-    window.localStorage.setItem('CORE_PATH', corePath)
-    window.localStorage.setItem('MONGO_URL', mongoUrl)
-
-    fetchConfiguration()
-
-    setOpen(false)
   }
 
   const [open, setOpen] = useState(false)
@@ -108,12 +78,14 @@ export default function LoginPage({ className, ...props }) {
           </CardContent>
         </Card>
 
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger className="flex items-center justify-center">
-            <div className="p-3 rounded-xl border border-gray-200 flex items-center justify-center w-fit self-center">
-              <CogIcon />
-            </div>
-          </DialogTrigger>
+        <SettingsDialog>
+          <div className="p-3 rounded-xl border border-gray-200 flex items-center justify-center w-fit self-center">
+            <CogIcon />
+          </div>
+        </SettingsDialog>
+
+        {/* <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger className="flex items-center justify-center"></DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Configuration</DialogTitle>
@@ -132,7 +104,7 @@ export default function LoginPage({ className, ...props }) {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+        </Dialog> */}
       </div>
 
       <Toaster />
