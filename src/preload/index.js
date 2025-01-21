@@ -11,8 +11,18 @@ const api = {
   test: () => {},
   getConfiguration: async () => {
     return {
-      corePath: window.localStorage.getItem('CORE_PATH'),
-      mongoUrl: window.localStorage.getItem('MONGO_URL'),
+      corePath: window.localStorage.getItem('CORE_PATH') ?? '',
+      pythonVenvPath: window.localStorage.getItem('PYTHON_VENV_PATH') ?? '',
+
+      mongoHost: window.localStorage.getItem('DWC_MONGO_HOST') ?? '',
+      mongoPort: window.localStorage.getItem('DWC_MONGO_PORT') ?? '',
+      mongoUser: window.localStorage.getItem('DWC_MONGO_USER') ?? '',
+      mongoPassword: window.localStorage.getItem('DWC_MONGO_PASS') ?? '',
+
+      torBinaryPath: window.localStorage.getItem('DWC_TOR_BINARY_PATH') ?? '',
+      torProfilePath: window.localStorage.getItem('DWC_TOR_PROFILE_PATH') ?? '',
+      geckoDriverPath: window.localStorage.getItem('DWC_GECKO_DRIVER_PATH') ?? '',
+
       id: window.localStorage.getItem('id'),
       name: window.localStorage.getItem('name'),
       email: window.localStorage.getItem('email')
@@ -132,18 +142,28 @@ const api = {
     const corePath = window.localStorage.getItem('CORE_PATH')
     const isWindows = process.platform == 'win32'
 
+    const setEnvCommand = isWindows
+      ? `set "DWC_TOR_BINARY_PATH=${window.localStorage.getItem('DWC_TOR_BINARY_PATH')}" && set "DWC_TOR_PROFILE_PATH=${window.localStorage.getItem('DWC_TOR_BINARY_PATH')}" && set "DWC_GECKO_DRIVER_PATH=${window.localStorage.getItem('DWC_GECKO_DRIVER_PATH')}" && set DWC_MONGO_HOST="${window.localStorage.getItem('DWC_MONGO_HOST')}" && set "DWC_MONGO_PORT=${window.localStorage.getItem('DWC_MONGO_PORT')}" && set "DWC_MONGO_USER=${window.localStorage.getItem('DWC_MONGO_USER')}" && set "DWC_MONGO_PASS=${window.localStorage.getItem('DWC_MONGO_PASS')}" `
+      : `DWC_TOR_BINARY_PATH="${window.localStorage.getItem('DWC_TOR_BINARY_PATH')}" DWC_TOR_PROFILE_PATH="${window.localStorage.getItem('DWC_TOR_BINARY_PATH')}" DWC_GECKO_DRIVER_PATH="${window.localStorage.getItem('DWC_GECKO_DRIVER_PATH')}" DWC_MONGO_HOST="${window.localStorage.getItem('DWC_MONGO_HOST')}" DWC_MONGO_PORT="${window.localStorage.getItem('DWC_MONGO_PORT')}" DWC_MONGO_USER="${window.localStorage.getItem('DWC_MONGO_USER')}" DWC_MONGO_PASS="${window.localStorage.getItem('DWC_MONGO_PASS')}" `
+
     const activateCommand = !isWindows
-      ? `source ${corePath}/.venv/bin/activate`
-      : `${corePath}\\.venv\\Scripts\\activate`
+      ? `source ${window.localStorage.getItem('PYTHON_VENV_PATH')}/bin/activate`
+      : `${window.localStorage.getItem('PYTHON_VENV_PATH')}\\Scripts\\activate`
 
     const separator = isWindows ? '&' : '&&'
 
     const cdCommand = !isWindows ? `cd ${corePath}/crawler` : `cd ${corePath}\\crawler`
 
-    const redirection = !isWindows ? ' > /dev/null 2>&1' : ''
+    // const redirection = !isWindows ? ' > /dev/null 2>&1' : ''
+
+    // console.log(setEnvCommand)
+
+    console.log(
+      `${setEnvCommand} ${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`
+    )
 
     const exe = child_process.spawn(
-      `${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`,
+      `${setEnvCommand} ${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`,
       [],
       { shell: true }
     )

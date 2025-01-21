@@ -83,28 +83,6 @@ export default function LoginPage({ className, ...props }) {
             <CogIcon />
           </div>
         </SettingsDialog>
-
-        {/* <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger className="flex items-center justify-center"></DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Configuration</DialogTitle>
-            </DialogHeader>
-            <div className="grid w-full items-center gap-1.5">
-              <Label>Core Path</Label>
-              <Input type="text" value={corePath} onChange={(e) => setCorePath(e.target.value)} />
-            </div>
-            <div className="grid w-full items-center gap-1.5">
-              <Label>Mongo URL</Label>
-              <Input type="text" value={mongoUrl} onChange={(e) => setMongoUrl(e.target.value)} />
-            </div>
-            <DialogFooter>
-              <Button onClick={submitConfiguration} type="button">
-                Save changes
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog> */}
       </div>
 
       <Toaster />
