@@ -5,6 +5,7 @@ import UrlUtils from './UrlUtils'
 import child_process from 'child_process'
 import Password from './Password'
 import Types from './Types'
+import sound from 'sound-play'
 
 const api = {
   getConfiguration: async () => {
@@ -174,6 +175,8 @@ const api = {
         })
 
         isCaptchaFound = true
+
+        return
       }
     })
 
@@ -197,6 +200,8 @@ const api = {
       child_process.exec(`pkill -9 -f python`)
       child_process.exec(`pkill -9 -f tor-browser`)
     }
+
+    child_process.exec(`pkill -9 -f ${siteName}`)
 
     await setRunningToPendingNamed(siteName)
   },
