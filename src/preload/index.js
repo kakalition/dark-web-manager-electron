@@ -153,6 +153,10 @@ const api = {
       console.log('on error')
       console.log(data.toString())
 
+      if (data.toString().includes('Closing')) {
+        isCaptchaFound = false
+      }
+
       if (data.toString().includes('Wait captcha is ready') && isCaptchaFound == false) {
         window.postMessage({
           type: Types.CAPTCHA_FOUND
@@ -164,8 +168,12 @@ const api = {
       }
     })
 
-    exe.on('close', (code, signal) => {
+    exe.on('close', async (code, signal) => {
       console.log('close', code, signal)
+
+      if (signal == 'SIGKILL') {
+        await setRunningToPendingNamed(siteName)
+      }
     })
   },
   killWorker: async (siteName) => {
