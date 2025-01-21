@@ -17,7 +17,7 @@ async function connectToCluster(uri) {
 }
 
 async function getJobsCrawlerCollection() {
-  const uri = 'mongodb://localhost:27017'
+  const uri = window.localStorage.getItem('MONGO_URL')
   let mongoClient
 
   try {
@@ -32,7 +32,7 @@ async function getJobsCrawlerCollection() {
 }
 
 async function getUsersCollection() {
-  const uri = 'mongodb://localhost:27017'
+  const uri = window.localStorage.getItem('MONGO_URL')
   let mongoClient
 
   try {

@@ -30,7 +30,7 @@ export default function LoginPage({ className, ...props }) {
       return
     }
 
-    window.localStorage.setItem('id', response.data.id)
+    window.localStorage.setItem('id', response.data.user_id)
     window.localStorage.setItem('name', response.data.name)
     window.localStorage.setItem('email', response.data.email)
 

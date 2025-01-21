@@ -1,9 +1,10 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import Database from './Database'
 import UrlUtils from './UrlUtils'
 import child_process from 'child_process'
 import Password from './Password'
+import Types from './Types'
 
 const api = {
   getConfiguration: async () => {
@@ -70,7 +71,10 @@ const api = {
         $project: {
           _id: 0,
           name_site: '$_id',
-          details: { $slice: ['$docs', 10] },
+          details: {
+            // $slice: ['$docs', 5]
+            $slice: [{ $sortArray: { input: '$docs', sortBy: { status: -1 } } }, 5]
+          },
           totalRows: 1,
           totalRunning: 1
         }
@@ -144,21 +148,12 @@ const api = {
           console.log('err', err)
           console.log('stderr', stderr)
 
-          await (
-            await Database.getJobsCrawlerCollection()
-          ).updateMany(
-            {
-              status: '3'
-            },
-            {
-              $set: {
-                status: '0'
-              }
-            }
-          )
-        }
+          window.postMessage({
+            type: Types.PROCESS_CRASHED
+          })
 
-        console.log('stdout', stdout)
+          await setRunningToPendingNamed(siteName)
+        }
       }
     )
 
@@ -183,6 +178,12 @@ const api = {
     //   }
     // })
   },
+  killWorker: async (siteName) => {
+    console.log(`killing ${siteName}`)
+    child_process.exec(`pkill -9 -f ${siteName}`)
+
+    await setRunningToPendingNamed(siteName)
+  },
   stopCrawling: async () => {
     if (process.platform == 'win32') {
       child_process.exec(`taskkill -f -im python.exe`)
@@ -193,20 +194,39 @@ const api = {
       child_process.exec(`pkill -9 -f tor-browser`)
     }
 
-    await (
-      await Database.getJobsCrawlerCollection()
-    ).updateMany(
-      {
-        status: '3'
-      },
-      {
-        $set: {
-          status: '0'
-        }
+    await setRunningToPending()
+  }
+}
+
+async function setRunningToPending() {
+  await (
+    await Database.getJobsCrawlerCollection()
+  ).updateMany(
+    {
+      status: '3'
+    },
+    {
+      $set: {
+        status: '0'
       }
-    )
-  },
-  onCrawlCaptcha: (callback) => ipcRenderer.on('CRAWL_CAPTCHA', (_event, value) => callback(value))
+    }
+  )
+}
+
+async function setRunningToPendingNamed(siteName) {
+  await (
+    await Database.getJobsCrawlerCollection()
+  ).updateMany(
+    {
+      status: '3',
+      name_site: siteName
+    },
+    {
+      $set: {
+        status: '0'
+      }
+    }
+  )
 }
 
 function getCurrentDateTime() {
