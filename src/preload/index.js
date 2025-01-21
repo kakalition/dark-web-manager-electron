@@ -140,43 +140,46 @@ const api = {
 
     const redirection = !isWindows ? ' > /dev/null 2>&1' : ''
 
-    child_process.exec(
-      `${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`,
-      async (err, stdout, stderr) => {
-        console.log('async in process')
-        if (err) {
-          console.log('err', err)
-          console.log('stderr', stderr)
-
-          window.postMessage({
-            type: Types.PROCESS_CRASHED
-          })
-
-          await setRunningToPendingNamed(siteName)
-        }
-      }
-    )
-
-    // const exe = child_process.spawn(
+    // child_process.exec(
     //   `${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`,
-    //   [],
-    //   { shell: true }
+    //   async (err, stdout, stderr) => {
+    //     console.log('async in process')
+    //     if (err) {
+    //       console.log('err', err)
+    //       console.log('stderr', stderr)
+
+    //       window.postMessage({
+    //         type: Types.PROCESS_CRASHED
+    //       })
+
+    //       await setRunningToPendingNamed(siteName)
+    //     }
+    //   }
     // )
 
-    // exe.stdout.on('data', (data) => {
-    //   console.log('on data')
-    //   console.log(data.toString())
-    // })
+    const exe = child_process.spawn(
+      `${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`,
+      [],
+      { shell: true }
+    )
 
-    // exe.stderr.on('data', (data) => {
-    //   console.log('on error')
-    //   console.log(data.toString())
+    let isCaptchaFound = false
+    exe.stderr.on('data', (data) => {
+      console.log('on error')
+      console.log(data.toString())
 
-    //   if (data.toString().includes('Wait captcha is ready')) {
-    //     ipcRenderer.send('CRAWL_CAPTCHA', 'CALLED')
-    //     console.log('send to renderer ipc')
-    //   }
-    // })
+      if (data.toString().includes('Wait captcha is ready') && isCaptchaFound == false) {
+        window.postMessage({
+          type: Types.CAPTCHA_FOUND
+        })
+
+        isCaptchaFound = true
+      }
+    })
+
+    exe.on('close', (code, signal) => {
+      console.log('close', code, signal)
+    })
   },
   killWorker: async (siteName) => {
     console.log(`killing ${siteName}`)
@@ -194,8 +197,6 @@ const api = {
       child_process.exec(`pkill -9 -f python`)
       child_process.exec(`pkill -9 -f tor-browser`)
     }
-
-    child_process.exec(`pkill -9 -f ${siteName}`)
 
     await setRunningToPendingNamed(siteName)
   },

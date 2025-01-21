@@ -39,6 +39,7 @@
     "ramda": "^0.30.1",
     "react-hot-toast": "^2.5.1",
     "shelljs": "^0.8.5",
+    "sound-play": "^1.1.0",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7"
   },

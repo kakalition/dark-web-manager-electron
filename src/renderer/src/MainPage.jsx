@@ -38,6 +38,8 @@ import {
 } from './components/ui/dialog'
 import Types from '../../preload/Types'
 
+import alarm from '../../../resources/alarm.wav'
+
 export default function Page() {
   const [sites, setSites] = useState([])
 
@@ -57,6 +59,7 @@ export default function Page() {
 
       if (event.data.type === Types.CAPTCHA_FOUND) {
         toast.error('Captcha detected')
+        new Audio(alarm).play()
         return
       }
     })
@@ -148,9 +151,7 @@ export default function Page() {
   async function onKill(site) {
     window.api.killWorker(site)
 
-    setTimeout(() => {
-      window.api.getSites().then(setSites)
-    }, 2000)
+    window.api.getSites().then(setSites)
   }
 
   async function onSidebarItemClick(key) {
