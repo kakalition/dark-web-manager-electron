@@ -282,7 +282,29 @@ async function setRunningToPendingNamed(siteName) {
   ).updateMany(
     {
       status: '3',
-      name_site: siteName
+      name_site: siteName,
+      send_profile_summary: {
+        $exists: true
+      },
+      user_id: window.localStorage.getItem('id')
+    },
+    {
+      $set: {
+        status: '1'
+      }
+    }
+  )
+
+  await (
+    await Database.getJobsCrawlerCollection()
+  ).updateMany(
+    {
+      status: '3',
+      name_site: siteName,
+      send_profile_summary: {
+        $exists: false
+      },
+      user_id: window.localStorage.getItem('id')
     },
     {
       $set: {
