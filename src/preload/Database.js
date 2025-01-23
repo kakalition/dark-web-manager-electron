@@ -12,16 +12,15 @@ async function connectToCluster(uri) {
     return mongoClient
   } catch (error) {
     console.error('Connection to MongoDB Atlas failed!', error)
-    process.exit()
+    // process.exit()
   }
 }
 
 async function getJobsCrawlerCollection() {
-  const uri = window.localStorage.getItem('MONGO_URL')
   let mongoClient
 
   try {
-    mongoClient = await connectToCluster(uri)
+    mongoClient = await connectToCluster(getMongoURI())
     const db = mongoClient.db('darkweb_task')
     const collection = db.collection('jobs_crawler')
 
@@ -32,11 +31,10 @@ async function getJobsCrawlerCollection() {
 }
 
 async function getUsersCollection() {
-  const uri = window.localStorage.getItem('MONGO_URL')
   let mongoClient
 
   try {
-    mongoClient = await connectToCluster(uri)
+    mongoClient = await connectToCluster(getMongoURI())
     const db = mongoClient.db('darkweb_task')
     const collection = db.collection('users')
 
@@ -44,6 +42,10 @@ async function getUsersCollection() {
   } catch {
     console.error('Failed to connect to MongoClient.')
   }
+}
+
+function getMongoURI() {
+  return `mongodb://${window.localStorage.getItem('DWC_MONGO_HOST')}:${window.localStorage.getItem('DWC_MONGO_PORT')}`
 }
 
 export default {

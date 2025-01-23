@@ -48,7 +48,6 @@ export default function Page() {
 
     window.api.getSites().then(setSites)
 
-
     window.addEventListener('message', async (event) => {
       if (event.source !== window) {
         return
@@ -63,6 +62,11 @@ export default function Page() {
       if (event.data.type === Types.CAPTCHA_FOUND) {
         toast.error('Captcha detected')
         new Audio(alarm).play()
+        return
+      }
+
+      if (event.data.type === Types.REFRESH) {
+        setSites(await window.api.getSites())
         return
       }
     })

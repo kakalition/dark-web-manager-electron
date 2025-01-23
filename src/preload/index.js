@@ -194,6 +194,10 @@ const api = {
       if (signal == 'SIGKILL') {
         await setRunningToPendingNamed(siteName)
       }
+
+      window.postMessage({
+        type: Types.REFRESH
+      })
     })
   },
   killWorker: async (siteName) => {
@@ -201,8 +205,8 @@ const api = {
 
     if (process.platform == 'win32') {
       child_process.exec(
-        'powershell.exe -command "& Get-CimInstance -ClassName Win32_Process | Select-Object -Property ProcessId, CommandLine" | findstr endchan',
-        (err, stdout, stderr) => {
+        `powershell.exe -command "& Get-CimInstance -ClassName Win32_Process | Select-Object -Property ProcessId, CommandLine" | findstr ${siteName}`,
+        (err, stdout) => {
           const procs = stdout
             .split('\n')
             .map((e) => e.replace(/ +(?= )/g, ''))
@@ -226,11 +230,10 @@ const api = {
   stopCrawling: async () => {
     if (process.platform == 'win32') {
       child_process.exec(`taskkill -f -im python.exe`)
-      child_process.exec(`taskkill -f -im tor-browser.exe`)
       child_process.exec(`taskkill -f -im firefox.exe`)
     } else {
       child_process.exec(`pkill -9 -f python`)
-      child_process.exec(`pkill -9 -f tor-browser`)
+      child_process.exec(`pkill -9 -f firefox`)
     }
 
     await setRunningToPending()
@@ -242,7 +245,28 @@ async function setRunningToPending() {
     await Database.getJobsCrawlerCollection()
   ).updateMany(
     {
-      status: '3'
+      status: '3',
+      send_profile_summary: {
+        $exists: true
+      },
+      user_id: window.localStorage.getItem('id')
+    },
+    {
+      $set: {
+        status: '1'
+      }
+    }
+  )
+
+  await (
+    await Database.getJobsCrawlerCollection()
+  ).updateMany(
+    {
+      status: '3',
+      send_profile_summary: {
+        $exists: false
+      },
+      user_id: window.localStorage.getItem('id')
     },
     {
       $set: {
