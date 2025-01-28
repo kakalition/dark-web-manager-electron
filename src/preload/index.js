@@ -1,4 +1,4 @@
-import { app, contextBridge } from 'electron'
+import { contextBridge } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import Database from './Database'
 import UrlUtils from './UrlUtils'
@@ -7,7 +7,7 @@ import Password from './Password'
 import Types from './Types'
 
 function isDev() {
-  return false
+  return true
 }
 
 function isWindows() {
@@ -159,58 +159,10 @@ const api = {
   executeSite: async (siteName) => {
     console.log('executing', siteName)
 
-    const corePath = getCorePath()
-    const isWindows = process.platform == 'win32'
-
-    const setEnvCommand = isWindows
-      ? `set "DWC_TOR_BINARY_PATH=${window.localStorage.getItem('DWC_TOR_BINARY_PATH')}" && set "DWC_TOR_PROFILE_PATH=${window.localStorage.getItem('DWC_TOR_PROFILE_PATH')}" && set "DWC_GECKO_DRIVER_PATH=${window.localStorage.getItem('DWC_GECKO_DRIVER_PATH')}" && set DWC_MONGO_HOST="${window.localStorage.getItem('DWC_MONGO_HOST')}" && set "DWC_MONGO_PORT=${window.localStorage.getItem('DWC_MONGO_PORT')}" && set "DWC_MONGO_USER=${window.localStorage.getItem('DWC_MONGO_USER')}" && set "DWC_MONGO_PASS=${window.localStorage.getItem('DWC_MONGO_PASS')}" `
-      : `export DWC_TOR_BINARY_PATH="${window.localStorage.getItem('DWC_TOR_BINARY_PATH')}" DWC_TOR_PROFILE_PATH="${window.localStorage.getItem('DWC_TOR_PROFILE_PATH')}" DWC_GECKO_DRIVER_PATH="${window.localStorage.getItem('DWC_GECKO_DRIVER_PATH')}" DWC_MONGO_HOST="${window.localStorage.getItem('DWC_MONGO_HOST')}" DWC_MONGO_PORT="${window.localStorage.getItem('DWC_MONGO_PORT')}" DWC_MONGO_USER="${window.localStorage.getItem('DWC_MONGO_USER')}" DWC_MONGO_PASS="${window.localStorage.getItem('DWC_MONGO_PASS')}" `
-
-    const activateCommand = !isWindows
-      ? `source ${corePath}/.venv/bin/activate`
-      : `${corePath}\\.wvenv\\Scripts\\activate`
-
-    const separator = isWindows ? '&' : '&&'
-
-    const cdCommand = !isWindows ? `cd ${corePath}/crawler` : `cd ${corePath}\\crawler`
-
-    const exe = child_process.spawn(
-      `${setEnvCommand} ${separator} ${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`,
-      [],
-      { shell: true }
-    )
-
-    let isCaptchaFound = false
-    exe.stderr.on('data', (data) => {
-      console.log('on error')
-      console.log(data.toString())
-
-      if (data.toString().includes('Closing')) {
-        isCaptchaFound = false
-      }
-
-      if (data.toString().includes('Wait captcha is ready') && isCaptchaFound == false) {
-        window.postMessage({
-          type: Types.CAPTCHA_FOUND
-        })
-
-        isCaptchaFound = true
-
-        return
-      }
-    })
-
-    exe.on('close', async (code, signal) => {
-      console.log('close', code, signal)
-
-      if (signal == 'SIGKILL') {
-        await setRunningToPendingNamed(siteName)
-      }
-
-      window.postMessage({
-        type: Types.REFRESH
-      })
-    })
+    crawlSite(siteName, () => crawlProfile(siteName))
+  },
+  executeProfileOnly: async (siteName) => {
+    crawlProfile(siteName)
   },
   killWorker: async (siteName) => {
     console.log(`killing ${siteName}`)
@@ -248,6 +200,126 @@ const api = {
 
     await setRunningToPending()
   }
+}
+
+async function crawlSite(siteName, onExit) {
+  console.log('executing crawl site', siteName)
+
+  const corePath = getCorePath()
+  const isWindows = process.platform == 'win32'
+
+  const setEnvCommand = isWindows
+    ? `set "DWC_TOR_BINARY_PATH=${window.localStorage.getItem('DWC_TOR_BINARY_PATH')}" && set "DWC_TOR_PROFILE_PATH=${window.localStorage.getItem('DWC_TOR_PROFILE_PATH')}" && set "DWC_GECKO_DRIVER_PATH=${window.localStorage.getItem('DWC_GECKO_DRIVER_PATH')}" && set DWC_MONGO_HOST="${window.localStorage.getItem('DWC_MONGO_HOST')}" && set "DWC_MONGO_PORT=${window.localStorage.getItem('DWC_MONGO_PORT')}" && set "DWC_MONGO_USER=${window.localStorage.getItem('DWC_MONGO_USER')}" && set "DWC_MONGO_PASS=${window.localStorage.getItem('DWC_MONGO_PASS')}" `
+    : `export DWC_TOR_BINARY_PATH="${window.localStorage.getItem('DWC_TOR_BINARY_PATH')}" DWC_TOR_PROFILE_PATH="${window.localStorage.getItem('DWC_TOR_PROFILE_PATH')}" DWC_GECKO_DRIVER_PATH="${window.localStorage.getItem('DWC_GECKO_DRIVER_PATH')}" DWC_MONGO_HOST="${window.localStorage.getItem('DWC_MONGO_HOST')}" DWC_MONGO_PORT="${window.localStorage.getItem('DWC_MONGO_PORT')}" DWC_MONGO_USER="${window.localStorage.getItem('DWC_MONGO_USER')}" DWC_MONGO_PASS="${window.localStorage.getItem('DWC_MONGO_PASS')}" `
+
+  const activateCommand = !isWindows
+    ? `source ${corePath}/.venv/bin/activate`
+    : `${corePath}\\.wvenv\\Scripts\\activate`
+
+  const separator = isWindows ? '&' : '&&'
+
+  const cdCommand = !isWindows ? `cd ${corePath}/crawler` : `cd ${corePath}\\crawler`
+
+  const exe = child_process.spawn(
+    `${setEnvCommand} ${separator} ${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`,
+    [],
+    { shell: true }
+  )
+
+  let isCaptchaFound = false
+  exe.stderr.on('data', (data) => {
+    console.log('on error')
+    console.log(data.toString())
+
+    if (data.toString().includes('Closing')) {
+      isCaptchaFound = false
+    }
+
+    if (data.toString().includes('Wait captcha is ready') && isCaptchaFound == false) {
+      window.postMessage({
+        type: Types.CAPTCHA_FOUND
+      })
+
+      isCaptchaFound = true
+
+      return
+    }
+  })
+
+  exe.on('close', async (code, signal) => {
+    console.log('close', code, signal)
+
+    if (signal == 'SIGKILL') {
+      await setRunningToPendingNamed(siteName)
+    }
+
+    window.postMessage({
+      type: Types.REFRESH
+    })
+  })
+
+  exe.on('exit', function () {
+    onExit()
+  })
+}
+
+async function crawlProfile(siteName) {
+  console.log('executing crawl profile', siteName)
+
+  const corePath = getCorePath()
+  const isWindows = process.platform == 'win32'
+
+  const setEnvCommand = isWindows
+    ? `set "DWC_TOR_BINARY_PATH=${window.localStorage.getItem('DWC_TOR_BINARY_PATH')}" && set "DWC_TOR_PROFILE_PATH=${window.localStorage.getItem('DWC_TOR_PROFILE_PATH')}" && set "DWC_GECKO_DRIVER_PATH=${window.localStorage.getItem('DWC_GECKO_DRIVER_PATH')}" && set DWC_MONGO_HOST="${window.localStorage.getItem('DWC_MONGO_HOST')}" && set "DWC_MONGO_PORT=${window.localStorage.getItem('DWC_MONGO_PORT')}" && set "DWC_MONGO_USER=${window.localStorage.getItem('DWC_MONGO_USER')}" && set "DWC_MONGO_PASS=${window.localStorage.getItem('DWC_MONGO_PASS')}" `
+    : `export DWC_TOR_BINARY_PATH="${window.localStorage.getItem('DWC_TOR_BINARY_PATH')}" DWC_TOR_PROFILE_PATH="${window.localStorage.getItem('DWC_TOR_PROFILE_PATH')}" DWC_GECKO_DRIVER_PATH="${window.localStorage.getItem('DWC_GECKO_DRIVER_PATH')}" DWC_MONGO_HOST="${window.localStorage.getItem('DWC_MONGO_HOST')}" DWC_MONGO_PORT="${window.localStorage.getItem('DWC_MONGO_PORT')}" DWC_MONGO_USER="${window.localStorage.getItem('DWC_MONGO_USER')}" DWC_MONGO_PASS="${window.localStorage.getItem('DWC_MONGO_PASS')}" `
+
+  const activateCommand = !isWindows
+    ? `source ${corePath}/.venv/bin/activate`
+    : `${corePath}\\.wvenv\\Scripts\\activate`
+
+  const separator = isWindows ? '&' : '&&'
+
+  const cdCommand = !isWindows ? `cd ${corePath}/crawler` : `cd ${corePath}\\crawler`
+
+  const exe = child_process.spawn(
+    `${setEnvCommand} ${separator} ${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_profiles --userid ${window.localStorage.getItem('id')}`,
+    [],
+    { shell: true }
+  )
+
+  let isCaptchaFound = false
+  exe.stderr.on('data', (data) => {
+    console.log('on error')
+    console.log(data.toString())
+
+    if (data.toString().includes('Closing')) {
+      isCaptchaFound = false
+    }
+
+    if (data.toString().includes('Wait captcha is ready') && isCaptchaFound == false) {
+      window.postMessage({
+        type: Types.CAPTCHA_FOUND
+      })
+
+      isCaptchaFound = true
+
+      return
+    }
+  })
+
+  exe.on('close', async (code, signal) => {
+    console.log('close', code, signal)
+
+    if (signal == 'SIGKILL') {
+      await setRunningToPendingNamed(siteName)
+    }
+
+    window.postMessage({
+      type: Types.REFRESH
+    })
+  })
+
+  return exe
 }
 
 async function setRunningToPending() {

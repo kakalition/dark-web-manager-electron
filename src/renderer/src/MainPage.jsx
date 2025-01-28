@@ -70,6 +70,14 @@ export default function Page() {
         return
       }
     })
+
+    const interval = setInterval(async () => {
+      setSites(await window.api.getSites())
+    }, 10000)
+
+    return () => {
+      clearInterval(interval)
+    }
   }, [])
 
   useEffect(() => {
@@ -147,8 +155,13 @@ export default function Page() {
     setSites(await window.api.getSites())
   }
 
-  async function executeCrawl(site) {
-    window.api.executeSite(site)
+  async function executeCrawl(site, data) {
+    if (data.details.map((e) => e.status).includes('1')) {
+      // Post Crawled
+      window.api.executeProfileOnly(site)
+    } else {
+      window.api.executeSite(site)
+    }
 
     setTimeout(() => {
       window.api.getSites().then(setSites)
@@ -288,7 +301,7 @@ export default function Page() {
                             </Button>
                           </DialogClose>
                           <DialogClose asChild>
-                            <Button onClick={() => executeCrawl(e.name_site)} type="button">
+                            <Button onClick={() => executeCrawl(e.name_site, e)} type="button">
                               Sure
                             </Button>
                           </DialogClose>
