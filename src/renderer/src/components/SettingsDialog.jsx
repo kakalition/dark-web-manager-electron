@@ -69,7 +69,7 @@ export default function SettingsDialog({ children, afterSubmitCallback }) {
         <DialogHeader>
           <DialogTitle>Configuration</DialogTitle>
         </DialogHeader>
-        <div className="grid w-full items-center gap-1.5">
+        {/* <div className="grid w-full items-center gap-1.5">
           <Label>Core Path</Label>
           <Input type="text" value={corePath} onChange={(e) => setCorePath(e.target.value)} />
         </div>
@@ -80,7 +80,7 @@ export default function SettingsDialog({ children, afterSubmitCallback }) {
             value={pythonVenvPath}
             onChange={(e) => setPythonVenvPath(e.target.value)}
           />
-        </div>
+        </div> */}
         <div className="grid w-full items-center gap-1.5">
           <Label>Mongo Host</Label>
           <Input type="text" value={mongoHost} onChange={(e) => setMongoHost(e.target.value)} />

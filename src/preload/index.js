@@ -7,7 +7,7 @@ import Password from './Password'
 import Types from './Types'
 
 function isDev() {
-  return true
+  return false
 }
 
 function isWindows() {
@@ -105,7 +105,6 @@ const api = {
           _id: 0,
           name_site: '$_id',
           details: {
-            // $slice: ['$docs', 5]
             $slice: [{ $sortArray: { input: '$docs', sortBy: { status: -1 } } }, 5]
           },
           totalRows: 1,
@@ -175,10 +174,6 @@ const api = {
 
     const cdCommand = !isWindows ? `cd ${corePath}/crawler` : `cd ${corePath}\\crawler`
 
-    console.log(
-      `${setEnvCommand} ${separator} ${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`
-    )
-
     const exe = child_process.spawn(
       `${setEnvCommand} ${separator} ${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`,
       [],
@@ -232,8 +227,6 @@ const api = {
           console.log('pids', pids)
 
           pids.forEach((pid) => {
-            child_process.exec(`taskkill -f -im firefox.exe`)
-            console.log(`killing pid ${pid}`)
             child_process.exec(`taskkill /F /PID ${pid}`)
           })
         }
