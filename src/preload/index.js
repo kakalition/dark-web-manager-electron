@@ -159,6 +159,18 @@ const api = {
   executeSite: async (siteName) => {
     console.log('executing', siteName)
 
+    const existing = await (
+      await Database.getJobsCrawlerCollection()
+    ).findOne({
+      name_site: siteName,
+      status: '1'
+    })
+
+    if (existing) {
+      crawlProfile(siteName)
+      return
+    }
+
     crawlSite(siteName, () => crawlProfile(siteName))
   },
   executeProfileOnly: async (siteName) => {

@@ -34,8 +34,6 @@ export default function LoginPage({ className, ...props }) {
     }, 1000)
   }
 
-  const [open, setOpen] = useState(false)
-
   return (
     <div className="flex items-center justify-center h-screen" {...props}>
       <div className={cn('flex flex-col gap-6 w-[40%]', className)}>
