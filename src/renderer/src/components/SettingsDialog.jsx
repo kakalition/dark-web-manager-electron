@@ -81,7 +81,7 @@ export default function SettingsDialog({ children, afterSubmitCallback }) {
             onChange={(e) => setPythonVenvPath(e.target.value)}
           />
         </div> */}
-        <div className="grid w-full items-center gap-1.5">
+        {/*<div className="grid w-full items-center gap-1.5">
           <Label>Mongo Host</Label>
           <Input type="text" value={mongoHost} onChange={(e) => setMongoHost(e.target.value)} />
         </div>
@@ -100,7 +100,7 @@ export default function SettingsDialog({ children, afterSubmitCallback }) {
             value={mongoPassword}
             onChange={(e) => setMongoPassword(e.target.value)}
           />
-        </div>
+        </div> */}
         <div className="grid w-full items-center gap-1.5">
           <Label>Tor Binary Path</Label>
           <Input

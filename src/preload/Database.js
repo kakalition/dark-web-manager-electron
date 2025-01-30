@@ -45,7 +45,8 @@ async function getUsersCollection() {
 }
 
 function getMongoURI() {
-  const temp = `mongodb://${window.localStorage.getItem('DWC_MONGO_USER')}:${window.localStorage.getItem('DWC_MONGO_PASS')}@${window.localStorage.getItem('DWC_MONGO_HOST')}:${window.localStorage.getItem('DWC_MONGO_PORT')}/allnewdarkweb?directConnection=true`
+  // const temp = `mongodb://${window.localStorage.getItem('DWC_MONGO_USER')}:${window.localStorage.getItem('DWC_MONGO_PASS')}@${window.localStorage.getItem('DWC_MONGO_HOST')}:${window.localStorage.getItem('DWC_MONGO_PORT')}/allnewdarkweb?directConnection=true`
+  const temp = "mongodb://allnewdarkweb_user:!Allnew2025darkw3b@167.99.72.105:27017/allnewdarkweb?directConnection=true"
   console.log(temp)
 
   return temp
