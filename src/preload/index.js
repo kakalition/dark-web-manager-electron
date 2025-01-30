@@ -7,7 +7,7 @@ import Password from './Password'
 import Types from './Types'
 
 function isDev() {
-  return true
+  return false
 }
 
 function isWindows() {
@@ -232,6 +232,10 @@ async function crawlSite(siteName, onExit) {
 
   const cdCommand = !isWindows ? `cd ${corePath}/crawler` : `cd ${corePath}\\crawler`
 
+  console.log(
+        `${setEnvCommand} ${separator} ${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`,
+  )
+
   const exe = child_process.spawn(
     `${setEnvCommand} ${separator} ${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`,
     [],
@@ -343,7 +347,7 @@ async function setRunningToPending() {
       send_profile_summary: {
         $exists: true
       },
-      user_id: window.localStorage.getItem('id')
+      running_user_id: window.localStorage.getItem('id')
     },
     {
       $set: {
@@ -360,7 +364,7 @@ async function setRunningToPending() {
       send_profile_summary: {
         $exists: false
       },
-      user_id: window.localStorage.getItem('id')
+      running_user_id: window.localStorage.getItem('id')
     },
     {
       $set: {
@@ -380,7 +384,7 @@ async function setRunningToPendingNamed(siteName) {
       send_profile_summary: {
         $exists: true
       },
-      user_id: window.localStorage.getItem('id')
+      running_user_id: window.localStorage.getItem('id')
     },
     {
       $set: {
@@ -398,7 +402,7 @@ async function setRunningToPendingNamed(siteName) {
       send_profile_summary: {
         $exists: false
       },
-      user_id: window.localStorage.getItem('id')
+      running_user_id: window.localStorage.getItem('id')
     },
     {
       $set: {
