@@ -233,7 +233,7 @@ async function crawlSite(siteName, onExit) {
   const cdCommand = !isWindows ? `cd ${corePath}/crawler` : `cd ${corePath}\\crawler`
 
   console.log(
-        `${setEnvCommand} ${separator} ${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`,
+    `${setEnvCommand} ${separator} ${activateCommand} ${separator} ${cdCommand} ${separator} python script_new.py --sites ${siteName} --action  update_posts --userid ${window.localStorage.getItem('id')}`
   )
 
   const exe = child_process.spawn(

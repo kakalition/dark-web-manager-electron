@@ -1,5 +1,5 @@
 node_modules
-resources/darkwebcrawl
+# resources/darkwebcrawl
 dist
 out
 .DS_Store

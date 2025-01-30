@@ -39,9 +39,36 @@ import {
 import Types from '../../preload/Types'
 
 import alarm from '../../../resources/alarm.wav'
+import { Label } from './components/ui/label'
+import { generateUUIDv4, readCSVFromFileUpload, sleep } from './lib/utils'
 
 export default function Page() {
   const [sites, setSites] = useState([])
+
+  const [file, setFile] = useState(null)
+  const [filename, setFilename] = useState('')
+  const [importForm, setImportForm] = useState([])
+  useEffect(() => {
+    setFilename(file?.name ?? '')
+    readCSVFromFileUpload(
+      file,
+      (rows) => {
+        rows.forEach((row) => {
+          const id = generateUUIDv4()
+
+          setImportForm((prev) => ({
+            ...prev,
+            [id]: {
+              url: row.url,
+              site_name: row.site_name
+            }
+          }))
+        })
+      },
+      ','
+    )
+    setFilename('')
+  }, [file])
 
   useEffect(() => {
     window.api.test()
@@ -101,6 +128,32 @@ export default function Page() {
         [key]: value
       }
     }))
+  }
+
+  async function submitImport() {
+    console.log('import form', importForm)
+
+    let errorHappened = false
+    Object.keys(importForm)?.map(async (key) => {
+      const result = await window.api.submitSite(importForm[key].site_name, importForm[key].url)
+
+      if (result.status == 'FAILED') {
+        toast.error(result.message)
+        errorHappened = true
+      }
+    })
+
+    await sleep(2000)
+
+    const sites = await window.api.getSites()
+    setFile(null)
+    setImportForm([])
+
+    setSites(sites)
+
+    if (!errorHappened) {
+      toast.success('File berhasil diupload')
+    }
   }
 
   function addRow() {
@@ -178,6 +231,11 @@ export default function Page() {
     setSites(await window.api.getSites())
   }
 
+  function onClearImport() {
+    setImportForm([])
+    setFile(null)
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar onClick={onSidebarItemClick} />
@@ -251,6 +309,52 @@ export default function Page() {
                   <AlertDialogCancel>Close</AlertDialogCancel>
                   <Button onClick={addRow}>Add</Button>
                   <Button variant="ghost" onClick={() => setForm([])}>
+                    Clear
+                  </Button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <AlertDialog className="max-w-[80%] overflow-y-scroll max-h-[80%]">
+              <AlertDialogTrigger asChild>
+                <Button className="w-fit self-start mb-4" variant="outline">
+                  Import
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="max-w-[80%] overflow-y-scroll max-h-[80%]">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Import Links</AlertDialogTitle>
+                </AlertDialogHeader>
+                {Object.keys(importForm)?.map((key) => {
+                  return (
+                    <div key={key} className="flex flex-row gap-4 mb-1">
+                      <Input
+                        type="text"
+                        value={importForm[key].url}
+                        onChange={(e) => onUrlChange(key, 'url', e.target.value)}
+                      />
+                      <Input
+                        className="w-[20%]"
+                        type="text"
+                        value={importForm[key].site_name}
+                        onChange={(e) => onFormChange(key, 'site_name', e.target.value)}
+                        disabled={true}
+                      />
+                    </div>
+                  )
+                })}
+                <div className="grid w-full items-center gap-1.5">
+                  <Label>File</Label>
+                  <Input
+                    type="file"
+                    value={filename}
+                    onChange={(e) => setFile(e.target.files[0])}
+                  />
+                </div>
+                <div className="h-4" />
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Close</AlertDialogCancel>
+                  <Button onClick={submitImport}>Submit</Button>
+                  <Button variant="ghost" onClick={onClearImport}>
                     Clear
                   </Button>
                 </AlertDialogFooter>
