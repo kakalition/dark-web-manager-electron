@@ -201,13 +201,13 @@ export default function Page() {
         </header>
         <div className="flex overflow-x-scroll items-center flex-col p-4">
           <div className="flex flex-row items-center w-full gap-2">
-            <AlertDialog className="max-w-[80%]">
+            <AlertDialog className="max-w-[80%] overflow-y-scroll max-h-[80%]">
               <AlertDialogTrigger asChild>
                 <Button className="w-fit self-start mb-4" variant="outline">
                   Add Links
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent className="max-w-[80%]">
+              <AlertDialogContent className="max-w-[80%] overflow-y-scroll max-h-[80%]">
                 <AlertDialogHeader>
                   <AlertDialogTitle>Add Link</AlertDialogTitle>
                 </AlertDialogHeader>
@@ -250,6 +250,9 @@ export default function Page() {
                 <AlertDialogFooter>
                   <AlertDialogCancel>Close</AlertDialogCancel>
                   <Button onClick={addRow}>Add</Button>
+                  <Button variant="ghost" onClick={() => setForm([])}>
+                    Clear
+                  </Button>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
