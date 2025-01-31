@@ -7,7 +7,7 @@ import Password from './Password'
 import Types from './Types'
 
 function isDev() {
-  return false
+  return true
 }
 
 function isWindows() {

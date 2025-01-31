@@ -60,7 +60,7 @@ export default function Page() {
             ...prev,
             [id]: {
               url: row.url,
-              site_name: row.site_name
+              site_name: row.name_site
             }
           }))
         })
