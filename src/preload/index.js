@@ -126,6 +126,62 @@ const api = {
 
     return result
   },
+  getUncrawledSites: async () => {
+    const aggr = (await Database.getJobsCrawlerCollection()).aggregate([
+      {
+        $match: {
+          status: { $in: ['0', '1'] } // Match documents with status "0" or "1"
+        }
+      },
+      {
+        $group: {
+          _id: { name_site: '$name_site', status: '$status' }, // Group by name_site and status
+          count: { $sum: 1 } // Count occurrences of each status within each name_site
+        }
+      },
+      {
+        $group: {
+          _id: '$_id.name_site', // Group by name_site
+          statusCounts: { $push: { k: '$_id.status', v: '$count' } } // Array of status counts
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          name_site: '$_id',
+          statusCounts: {
+            $arrayToObject: {
+              // Convert the array to an object
+              $map: {
+                input: '$statusCounts',
+                as: 'sc',
+                in: { k: '$$sc.k', v: '$$sc.v' }
+              }
+            }
+          }
+        }
+      },
+      {
+        // Handle the case where a name_site has no status "0" or "1"
+        $addFields: {
+          statusCounts: {
+            $mergeObjects: [
+              { 0: 0, 1: 0 }, // Default values for status "0" and "1"
+              '$statusCounts' // Existing status counts
+            ]
+          }
+        }
+      }
+    ])
+
+    const result = []
+
+    for await (const doc of aggr) {
+      result.push(doc)
+    }
+
+    return result
+  },
   submitSite: async (siteName, url) => {
     const existing = await (
       await Database.getJobsCrawlerCollection()
