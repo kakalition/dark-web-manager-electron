@@ -89,6 +89,17 @@ const api = {
   getSites: async () => {
     const aggr = (await Database.getJobsCrawlerCollection()).aggregate([
       {
+        $addFields: {
+          name_site: {
+            $cond: {
+              if: { $not: ['$name_site'] }, // Check if name_site doesn't exist
+              then: '$site_name', // If it doesn't exist, use site_name
+              else: '$name_site' // If it exists, keep it as is
+            }
+          }
+        }
+      },
+      {
         $group: {
           _id: '$name_site',
           docs: { $push: '$$ROOT' },

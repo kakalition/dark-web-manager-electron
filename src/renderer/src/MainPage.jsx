@@ -468,7 +468,9 @@ export default function Page() {
 
                       return (
                         <div key={task.url} className="flex flex-row w-full gap-8">
-                          <p className="truncate w-full">{truncate(task?.url, 70)}</p>
+                          <p className="truncate w-full">
+                            {truncate(task?.url ?? task?.url_processed, 70)}
+                          </p>
                           {badge}
                         </div>
                       )

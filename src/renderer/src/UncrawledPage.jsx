@@ -91,22 +91,27 @@ export default function UncrawledPage() {
             <div className="col-span-6 flex flex-col justify-center p-4 rounded-xl bg-gray-100">
               <p className="text-xl mb-1">Total Link Uncrawled</p>
               <p className="font-semibold text-3xl">
-                {sites?.map((e) => e.statusCounts[0])?.reduce((prev, cur) => prev + cur, 0) ?? 0}
+                {sites?.map((e) => e.statusCounts[0] ?? 0)?.reduce((prev, cur) => prev + cur, 0) ??
+                  0}
               </p>
             </div>
             <div className="col-span-6 flex flex-col justify-center p-4 rounded-xl bg-gray-100">
               <p className="text-xl mb-1">Total Profile Uncrawled</p>
               <p className="font-semibold text-3xl">
-                {sites?.map((e) => e.statusCounts[1])?.reduce((prev, cur) => prev + cur, 0) ?? 0}
+                {sites?.map((e) => e.statusCounts[1] ?? 0)?.reduce((prev, cur) => prev + cur, 0) ??
+                  0}
               </p>
             </div>
 
             {sites?.map((e) => {
               return (
-                <div key={e.name_site} className="flex flex-col items-center gap-4 col-span-6">
+                <div
+                  key={e.name_site ?? e.site_name ?? Date.now()}
+                  className="flex flex-col items-center gap-4 col-span-6"
+                >
                   <div className="flex flex-row gap-2 w-full items-center"></div>
                   <div className="bg-red-400 flex items-center justify-between py-4 rounded-xl transition px-4 w-full">
-                    <p>{e.name_site}</p>
+                    <p>{e.name_site ?? e.site_name ?? '-'}</p>
                   </div>
                   <div className="bg-gray-100 flex flex-col py-4 rounded-xl w-full px-4 gap-4 justify-between">
                     <div className="flex flex-row w-full items-center justify-between">
