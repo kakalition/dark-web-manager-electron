@@ -48,6 +48,8 @@ export default function Page() {
   const [file, setFile] = useState(null)
   const [filename, setFilename] = useState('')
   const [importForm, setImportForm] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+
   useEffect(() => {
     setFilename(file?.name ?? '')
     readCSVFromFileUpload(
@@ -73,7 +75,11 @@ export default function Page() {
   useEffect(() => {
     window.api.test()
 
-    window.api.getSites().then(setSites)
+    setIsLoading(true)
+    window.api.getSites().then((res) => {
+      setSites(res)
+      setIsLoading(false)
+    })
 
     window.addEventListener('message', async (event) => {
       if (event.source !== window) {
@@ -367,119 +373,133 @@ export default function Page() {
               Stop Crawling
             </Button>
           </div>
-          <div className="grid grid-cols-12 gap-4 w-full">
-            {sites?.map((e) => {
-              const statuses = e.details.map((det) => det.status)
-              const containsRunningTask = statuses.includes('3')
 
-              return (
-                <div key={e.name_site} className="flex flex-col items-center gap-4 col-span-6">
-                  <div className="flex flex-row gap-2 w-full items-center">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <button
-                          type="button"
-                          className="bg-red-400 flex items-center justify-between py-4 rounded-xl w-full hover:bg-red-200 transition px-4 w-full"
-                        >
-                          <p>{e.name_site}</p>
-                          <p>
-                            {e.totalRunning} / {e.totalRows}
-                          </p>
-                        </button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-[425px]">
-                        <DialogHeader>
-                          <DialogTitle className="mb-2">Crawl Confirmation</DialogTitle>
-                          <DialogDescription>
-                            Are you sure want to execute crawling job for website &quot;
-                            {e.name_site}
-                            &quot;?
-                          </DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter>
-                          <DialogClose asChild>
-                            <Button type="button" variant="secondary">
-                              Close
-                            </Button>
-                          </DialogClose>
-                          <DialogClose asChild>
-                            <Button onClick={() => executeCrawl(e.name_site)} type="button">
-                              Sure
-                            </Button>
-                          </DialogClose>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button className={`h-full ${containsRunningTask ? '' : 'hidden'}`}>
-                          Kill
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-[425px]">
-                        <DialogHeader>
-                          <DialogTitle className="mb-2">Kill Crawl Confirmation</DialogTitle>
-                          <DialogDescription>
-                            Are you sure want to kill crawling job for website &quot;
-                            {e.name_site}
-                            &quot;?
-                          </DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter>
-                          <DialogClose asChild>
-                            <Button type="button" variant="secondary">
-                              Close
-                            </Button>
-                          </DialogClose>
-                          <DialogClose asChild>
-                            <Button onClick={() => onKill(e.name_site)} type="button">
-                              Sure
-                            </Button>
-                          </DialogClose>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center w-full py-10">
+              <div className="flex space-x-2">
+                <div className="w-4 h-4 bg-red-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                <div className="w-4 h-4 bg-red-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                <div className="w-4 h-4 bg-red-500 rounded-full animate-bounce"></div>
+              </div>
+              <p className="mt-4 text-sm text-gray-500 animate-pulse">
+                Loading data, please wait...
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-12 gap-4 w-full">
+              {sites?.map((e) => {
+                const statuses = e.details.map((det) => det.status)
+                const containsRunningTask = statuses.includes('3')
+
+                return (
+                  <div key={e.name_site} className="flex flex-col items-center gap-4 col-span-6">
+                    <div className="flex flex-row gap-2 w-full items-center">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <button
+                            type="button"
+                            className="bg-red-400 flex items-center justify-between py-4 rounded-xl w-full hover:bg-red-200 transition px-4 w-full"
+                          >
+                            <p>{e.name_site}</p>
+                            <p>
+                              {e.totalRunning} / {e.totalRows}
+                            </p>
+                          </button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                          <DialogHeader>
+                            <DialogTitle className="mb-2">Crawl Confirmation</DialogTitle>
+                            <DialogDescription>
+                              Are you sure want to execute crawling job for website &quot;
+                              {e.name_site}
+                              &quot;?
+                            </DialogDescription>
+                          </DialogHeader>
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button type="button" variant="secondary">
+                                Close
+                              </Button>
+                            </DialogClose>
+                            <DialogClose asChild>
+                              <Button onClick={() => executeCrawl(e.name_site)} type="button">
+                                Sure
+                              </Button>
+                            </DialogClose>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button className={`h-full ${containsRunningTask ? '' : 'hidden'}`}>
+                            Kill
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                          <DialogHeader>
+                            <DialogTitle className="mb-2">Kill Crawl Confirmation</DialogTitle>
+                            <DialogDescription>
+                              Are you sure want to kill crawling job for website &quot;
+                              {e.name_site}
+                              &quot;?
+                            </DialogDescription>
+                          </DialogHeader>
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button type="button" variant="secondary">
+                                Close
+                              </Button>
+                            </DialogClose>
+                            <DialogClose asChild>
+                              <Button onClick={() => onKill(e.name_site)} type="button">
+                                Sure
+                              </Button>
+                            </DialogClose>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                    <div className="bg-gray-100 flex flex-col py-4 rounded-xl w-full px-4 gap-4 justify-between">
+                      {e.details.map((task) => {
+                        let badge = ''
+
+                        if (task.status == 0) {
+                          badge = (
+                            <Badge className="flex-none hover:bg-gray-300 hover:text-black bg-gray-300 text-black">
+                              PENDING
+                            </Badge>
+                          )
+                        } else if (task.status == 1) {
+                          badge = (
+                            <Badge className="flex-none hover:bg-green-500 bg-green-500">
+                              POST CRAWLED
+                            </Badge>
+                          )
+                        } else if (task.status == 2) {
+                          badge = (
+                            <Badge className="flex-none hover:bg-green-500 bg-green-500">
+                              SUCCESS
+                            </Badge>
+                          )
+                        } else {
+                          badge = <Badge className="flex-none">ON PROCESS</Badge>
+                        }
+
+                        return (
+                          <div key={task.url} className="flex flex-row w-full gap-8">
+                            <p className="truncate w-full">
+                              {truncate(task?.url ?? task?.url_processed, 70)}
+                            </p>
+                            {badge}
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
-                  <div className="bg-gray-100 flex flex-col py-4 rounded-xl w-full px-4 gap-4 justify-between">
-                    {e.details.map((task) => {
-                      let badge = ''
-
-                      if (task.status == 0) {
-                        badge = (
-                          <Badge className="flex-none hover:bg-gray-300 hover:text-black bg-gray-300 text-black">
-                            PENDING
-                          </Badge>
-                        )
-                      } else if (task.status == 1) {
-                        badge = (
-                          <Badge className="flex-none hover:bg-green-500 bg-green-500">
-                            POST CRAWLED
-                          </Badge>
-                        )
-                      } else if (task.status == 2) {
-                        badge = (
-                          <Badge className="flex-none hover:bg-green-500 bg-green-500">
-                            SUCCESS
-                          </Badge>
-                        )
-                      } else {
-                        badge = <Badge className="flex-none">ON PROCESS</Badge>
-                      }
-
-                      return (
-                        <div key={task.url} className="flex flex-row w-full gap-8">
-                          <p className="truncate w-full">
-                            {truncate(task?.url ?? task?.url_processed, 70)}
-                          </p>
-                          {badge}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
+          )}
         </div>
         <Toaster />
       </SidebarInset>

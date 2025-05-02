@@ -22,7 +22,7 @@ async function getJobsCrawlerCollection() {
   try {
     mongoClient = await connectToCluster(getMongoURI())
     const db = mongoClient.db('allnewdarkweb')
-    const collection = db.collection('jobs_crawler')
+    const collection = db.collection('crawling')
 
     return collection
   } catch {
@@ -45,8 +45,8 @@ async function getUsersCollection() {
 }
 
 function getMongoURI() {
-  // const temp = `mongodb://${window.localStorage.getItem('DWC_MONGO_USER')}:${window.localStorage.getItem('DWC_MONGO_PASS')}@${window.localStorage.getItem('DWC_MONGO_HOST')}:${window.localStorage.getItem('DWC_MONGO_PORT')}/allnewdarkweb?directConnection=true`
-  const temp = "mongodb://allnewdarkweb_user:!Allnew2025darkw3b@167.99.72.105:27017/allnewdarkweb?directConnection=true"
+  const temp = `mongodb://${window.localStorage.getItem('DWC_MONGO_USER')}:${window.localStorage.getItem('DWC_MONGO_PASS')}@${window.localStorage.getItem('DWC_MONGO_HOST')}:${window.localStorage.getItem('DWC_MONGO_PORT')}/allnewdarkweb`
+  // const temp = 'mongodb://allnewdarkweb_user:NewSecurePass2025!@167.99.72.105:27017/allnewdarkweb'
   console.log(temp)
 
   return temp
