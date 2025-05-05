@@ -1,6 +1,7 @@
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
+import { resolve } from 'path'
 
 export default defineConfig({
   main: {
@@ -11,8 +12,15 @@ export default defineConfig({
   },
   renderer: {
     resolve: {
-      alias: {}
+      alias: {
+        'react/jsx-runtime': resolve('./node_modules/react/jsx-runtime')
+      }
     },
-    plugins: [react(), nodePolyfills()]
+    plugins: [
+      react({
+        jsxRuntime: 'automatic',  // Pastikan JSX runtime diatur ke automatic
+      }), 
+      nodePolyfills()
+    ]
   }
 })
