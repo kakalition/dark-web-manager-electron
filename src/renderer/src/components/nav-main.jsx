@@ -4,7 +4,7 @@ import { SearchIcon, SettingsIcon } from 'lucide-react'
 
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton } from './ui/sidebar'
 import SettingsDialog from './SettingsDialog'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 export function NavMain() {
   const navigate = useNavigate()

@@ -1,5 +1,4 @@
-import { HashRouter, Route, Routes } from 'react-router-dom'
-// import Gani from './Gani'  
+import { HashRouter, Route, Routes } from 'react-router'
 import LoginPage from './LoginPage'
 import MainPage from './MainPage'
 import UncrawledPage from './UncrawledPage'
